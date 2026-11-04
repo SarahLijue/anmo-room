@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4ead9">
+<meta name="description" content="ANMO ROOM — A little room for two. A quiet wooden Gomoku room.">
+<title>ANMO ROOM — A little room for two</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23a87545'/%3E%3Ccircle cx='35' cy='50' r='16' fill='%231b1a18'/%3E%3Ccircle cx='68' cy='50' r='16' fill='%23f7f1e7' stroke='%23ddd1bd' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+:root{--paper:#f4ead9;--paper2:#fbf6ed;--ink:#35291f;--muted:#8a7764;--wood:#b77d4e;--line:#8f633c;--line-soft:#bd956d;--green:#65745b;--shadow:0 18px 55px rgba(83,55,30,.12)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% -20%,#fffaf2 0,#f4ead9 56%,#eadbc5 100%);color:var(--ink);font-family:Georgia,"Noto Serif SC","Songti SC",serif;min-height:100vh}
+button{font:inherit}
+.page{width:min(1040px,100%);margin:auto;padding:30px 24px 42px}
+header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(125,91,60,.2);padding:4px 0 18px}
+.brand{font-size:17px;letter-spacing:.22em;font-weight:bold}
+.brand small{display:block;font-family:Arial,sans-serif;font-size:9px;letter-spacing:.24em;color:var(--muted);margin-top:5px;font-weight:400}
+.top-note{font:11px Arial,sans-serif;letter-spacing:.14em;color:var(--muted)}
+main{padding:44px 0 0}
+.intro{text-align:center;margin-bottom:28px}
+.eyebrow{font:10px Arial,sans-serif;letter-spacing:.28em;color:var(--wood);text-transform:uppercase}
+h1{font-size:clamp(35px,7vw,58px);font-weight:400;letter-spacing:.11em;margin:12px 0 8px}
+.subtitle{font:12px Arial,sans-serif;letter-spacing:.15em;color:var(--muted)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:26px;align-items:start}
+.board-wrap{background:linear-gradient(145deg,#e5c18e,#d3a36d 50%,#e9c694);padding:clamp(10px,2.5vw,19px);border-radius:7px;box-shadow:var(--shadow),inset 0 1px 1px #fff8;position:relative;border:1px solid #bd9161}
+.board-inner{background:linear-gradient(135deg,#e8c895,#dcb27d);border:1px solid rgba(112,70,35,.3);padding:3px}
+canvas{display:block;width:100%;height:auto;aspect-ratio:1;touch-action:manipulation;cursor:crosshair}
+.side{display:flex;flex-direction:column;gap:13px}
+.panel{background:rgba(255,250,242,.76);border:1px solid rgba(139,103,69,.2);border-radius:7px;padding:17px;box-shadow:0 7px 20px rgba(83,55,30,.045)}
+.panel-label{font:10px Arial,sans-serif;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.turnline{display:flex;align-items:center;gap:11px;margin-top:13px}
+.stone{width:23px;height:23px;border-radius:50%;flex:none;box-shadow:inset -3px -4px 5px #0002,0 2px 4px #0002}
+.stone.black{background:radial-gradient(circle at 32% 28%,#777,#242321 58%,#090909)}
+.stone.white{background:radial-gradient(circle at 32% 25%,#fff,#eee9df 66%,#c8bfb2);border:1px solid #c7bcae}
+.turn-title{font-size:18px}
+.turn-sub{font:11px Arial,sans-serif;color:var(--muted);margin-top:4px}
+.score{display:flex;justify-content:space-between;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid rgba(139,103,69,.17);font-size:12px}
+.score span{color:var(--muted);font:11px Arial,sans-serif}
+.score strong{font-weight:500;font-size:16px;margin-left:5px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{border:1px solid #cbb79e;background:#fffaf2;color:var(--ink);border-radius:5px;padding:12px 8px;font-size:12px;cursor:pointer;transition:.18s}
+.btn:hover{background:#f1e3cf;border-color:#aa8057}
+.btn.primary{background:#6e795f;color:#fffaf2;border-color:#6e795f}
+.btn.primary:hover{background:#58664c}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.hint{font:11px/1.7 Arial,sans-serif;color:var(--muted)}
+.last{font:11px Arial,sans-serif;color:var(--muted);margin-top:10px}
+footer{text-align:center;margin-top:34px;color:#9b8874;font:10px Arial,sans-serif;letter-spacing:.13em}
+.toast{min-height:18px;text-align:center;color:var(--green);font:12px Arial,sans-serif;margin-top:9px}
+@media(max-width:760px){.page{padding:18px 14px 28px}header{padding-bottom:14px}.top-note{font-size:9px}main{padding-top:28px}.layout{grid-template-columns:1fr;gap:13px}.side{display:grid;grid-template-columns:1fr 1fr;gap:9px}.panel.status{grid-column:1/-1}.panel{padding:13px}.turnline{margin-top:8px}.score{margin-top:12px;padding-top:10px}.actions{grid-column:1/-1}.hint-panel{grid-column:1/-1}.board-wrap{padding:9px}.intro{margin-bottom:19px}footer{margin-top:22px}}
+@media(max-width:380px){.side{grid-template-columns:1fr}.actions{grid-column:auto}.hint-panel{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <div class="brand">ANMO ROOM<small>A LITTLE ROOM FOR TWO</small></div>
+  <div class="top-note">EST. FOR A GOOD GAME</div>
+</header>
+<main>
+  <section class="intro">
+    <div class="eyebrow">TAKE A SEAT · PLAY A WHILE</div>
+    <h1>ANMO ROOM</h1>
+    <div class="subtitle">一间安静的小棋室 · TWO PLAYERS, ONE BOARD</div>
+  </section>
+  <section class="layout" aria-label="五子棋游戏">
+    <div>
+      <div class="board-wrap"><div class="board-inner"><canvas id="board" width="750" height="750" aria-label="15乘15五子棋棋盘"></canvas></div></div>
+      <div class="toast" id="toast" aria-live="polite">黑棋先行。愿这一局下得尽兴。</div>
+    </div>
+    <aside class="side">
+      <div class="panel status">
+        <div class="panel-label">NOW PLAYING · 当前回合</div>
+        <div class="turnline"><span id="turnStone" class="stone black"></span><div><div id="turnTitle" class="turn-title">黑棋落子</div><div id="turnSub" class="turn-sub">轮到黑方</div></div></div>
+        <div class="score">
+          <div><span>BLACK</span><strong id="blackScore">0</strong></div>
+          <div><span>WHITE</span><strong id="whiteScore">0</strong></div>
+          <div><span>MOVES</span><strong id="moves">0</strong></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="undo">↶ 悔棋</button>
+        <button class="btn" id="restart">重新开始 ↻</button>
+      </div>
+      <div class="panel hint-panel">
+        <div class="panel-label">THE RULES · 玩法</div>
+        <p class="hint">黑棋先行，双方轮流在交叉点落子。任意方向先连成五子（或更多）的一方获胜。</p>
+        <div class="last" id="lastMove">尚未落子</div>
+      </div>
+      <div class="panel hint-panel">
+        <div class="panel-label">A SMALL NOTE</div>
+        <p class="hint">两个人，一台设备，一盘棋。把手机横过来，或者在电脑前坐好，开始吧。</p>
+      </div>
+    </aside>
+  </section>
+</main>
+<footer>ANMO ROOM · MADE FOR SLOW MOMENTS & GOOD COMPANY</footer>
+</div>
+<script>
+(()=>{
+const canvas=document.getElementById('board'),ctx=canvas.getContext('2d'),N=15,S=750,P=29,STEP=(S-2*P)/(N-1);
+let grid,history,turn,ended,last,winLine,score=[0,0];
+const $=id=>document.getElementById(id);
+function init(){grid=Array.from({length:N},()=>Array(N).fill(0));history=[];turn=1;ended=false;last=null;winLine=[];say('黑棋先行。愿这一局下得尽兴。');render();ui()}
+function say(s){$('toast').textContent=s}
+function drawStone(x,y,c){
+ const px=P+x*STEP,py=P+y*STEP,r=STEP*.43;
+ const g=ctx.createRadialGradient(px-r*.32,py-r*.38,r*.04,px,py,r);
+ if(c===1){g.addColorStop(0,'#77736e');g.addColorStop(.35,'#33312e');g.addColorStop(1,'#090909')}
+ else{g.addColorStop(0,'#fffefa');g.addColorStop(.66,'#eee9df');g.addColorStop(1,'#bdb4a8')}
+ ctx.beginPath();ctx.arc(px,py,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+ ctx.strokeStyle=c===1?'#171614':'#aaa094';ctx.lineWidth=1.1;ctx.stroke();
+}
+function render(){
+ ctx.clearRect(0,0,S,S);
+ const bg=ctx.createLinearGradient(0,0,S,S);bg.addColorStop(0,'#edcf9d');bg.addColorStop(1,'#d8ad78');ctx.fillStyle=bg;ctx.fillRect(0,0,S,S);
+ ctx.strokeStyle='#80572f';ctx.lineWidth=1.35;
+ for(let i=0;i<N;i++){let p=P+i*STEP;ctx.beginPath();ctx.moveTo(P,p);ctx.lineTo(S-P,p);ctx.stroke();ctx.beginPath();ctx.moveTo(p,P);ctx.lineTo(p,S-P);ctx.stroke()}
+ ctx.fillStyle='#714a27';[3,7,11].forEach(x=>[3,7,11].forEach(y=>{ctx.beginPath();ctx.arc(P+x*STEP,P+y*STEP,3.3,0,Math.PI*2);ctx.fill()}));
+ for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(grid[y][x])drawStone(x,y,grid[y][x]);
+ if(last){const x=P+last.x*STEP,y=P+last.y*STEP;ctx.strokeStyle=last.c===1?'#fff':'#30271e';ctx.lineWidth=1.8;ctx.strokeRect(x-5,y-5,10,10)}
+ if(winLine.length){ctx.strokeStyle='#a53e2c';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(P+winLine[0].x*STEP,P+winLine[0].y*STEP);ctx.lineTo(P+winLine[winLine.length-1].x*STEP,P+winLine[winLine.length-1].y*STEP);ctx.stroke()}
+}
+function findWin(x,y,c){
+ for(const [dx,dy] of [[1,0],[0,1],[1,1],[1,-1]]){
+  let cells=[{x,y}];
+  for(let k=1;k<N;k++){let a=x+dx*k,b=y+dy*k;if(a<0||a>=N||b<0||b>=N||grid[b][a]!==c)break;cells.push({x:a,y:b})}
+  for(let k=1;k<N;k++){let a=x-dx*k,b=y-dy*k;if(a<0||a>=N||b<0||b>=N||grid[b][a]!==c)break;cells.unshift({x:a,y:b})}
+  if(cells.length>=5)return cells;
+ }
+ return null;
+}
+function ui(){
+ $('turnStone').className='stone '+(turn===1?'black':'white');
+ $('turnTitle').textContent=ended?(winLine.length?(turn===1?'黑方获胜':'白方获胜'):'平局'):(turn===1?'黑棋落子':'白棋落子');
+ $('turnSub').textContent=ended?'本局结束':`轮到${turn===1?'黑方':'白方'}`;
+ $('blackScore').textContent=score[0];$('whiteScore').textContent=score[1];$('moves').textContent=history.length;
+ $('lastMove').textContent=last?`最后落子：第 ${last.x+1} 列 · 第 ${last.y+1} 行`:'尚未落子';
+ $('undo').disabled=history.length===0;
+}
+function play(x,y){
+ if(ended||grid[y][x])return;
+ const c=turn;grid[y][x]=c;history.push({x,y,c});last={x,y,c};
+ const line=findWin(x,y,c);
+ if(line){winLine=line;ended=true;score[c-1]++;say((c===1?'黑方':'白方')+'获胜！恭喜这一局。')}
+ else if(history.length===N*N){ended=true;say('棋盘已满，平局。再来一局吧。')}
+ else{turn=3-turn;say((turn===1?'轮到黑棋':'轮到白棋')+'。')}
+ render();ui();
+}
+canvas.addEventListener('pointerdown',e=>{
+ const r=canvas.getBoundingClientRect(),x0=(e.clientX-r.left)*S/r.width,y0=(e.clientY-r.top)*S/r.height;
+ const x=Math.round((x0-P)/STEP),y=Math.round((y0-P)/STEP);
+ if(x<0||x>=N||y<0||y>=N)return;
+ if(Math.hypot(x0-P-x*STEP,y0-P-y*STEP)>STEP*.48)return;
+ play(x,y);
+});
+$('undo').addEventListener('click',()=>{
+ if(!history.length)return;
+ if(ended&&winLine.length){score[history[history.length-1].c-1]--;ended=false}
+ const m=history.pop();grid[m.y][m.x]=0;turn=m.c;winLine=[];
+ last=history.length?history[history.length-1]:null;
+ say('已悔棋。');render();ui();
+});
+$('restart').addEventListener('click',()=>{
+ if(history.length&&!confirm('确定结束当前对局并重新开始吗？'))return;
+ init();
+});
+init();
+})();
+</script>
+</body>
+</html>
